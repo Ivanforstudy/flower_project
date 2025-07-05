@@ -1,0 +1,20 @@
+{% extends 'main/base.html' %}
+{% block title %}Каталог цветов{% endblock %}
+{% block content %}
+<h1>Каталог</h1>
+<ul>
+    {% for flower in flowers %}
+        <li>
+            <h3>{{ flower.name }}</h3>
+            <img src="{{ flower.image.url }}" alt="{{ flower.name }}" width="150">
+            <p>{{ flower.description }}</p>
+            <p>Цена: {{ flower.price }} руб.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'order' flower.id %}">Заказать</a>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>Цветы отсутствуют</li>
+    {% endfor %}
+</ul>
+{% endblock %}

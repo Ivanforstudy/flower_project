@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+nav {
+    background-color: #fff0f5;
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    border-radius: 10px;
+}
+
+nav a {
+    margin-right: 10px;
+    text-decoration: none;
+    color: #800080;
+    font-weight: bold;
+}
+
+nav a:hover {
+    color: #cc00cc;
+}
+
+h1, h2 {
+    color: #993399;
+}
+
+img {
+    margin: 10px 0;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}

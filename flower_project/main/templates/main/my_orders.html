@@ -1,0 +1,16 @@
+{% extends 'main/base.html' %}
+{% block title %}Мои заказы{% endblock %}
+{% block content %}
+<h2>Мои заказы</h2>
+<ul>
+    {% for order in orders %}
+        <li>
+            <strong>{{ order.flower.name }}</strong> — {{ order.delivery_date }} {{ order.delivery_time }}<br>
+            Адрес: {{ order.address }}<br>
+            Комментарий: {{ order.comment }}
+        </li>
+    {% empty %}
+        <li>У вас нет заказов.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
