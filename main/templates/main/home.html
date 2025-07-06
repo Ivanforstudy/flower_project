@@ -1,0 +1,17 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<h2>Каталог букетов</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+  {% for bouquet in bouquets %}
+    <div style="border: 1px solid #ccc; padding: 10px; width: 250px;">
+      <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}" style="width: 100%;">
+      <h3>{{ bouquet.name }}</h3>
+      <p>{{ bouquet.description }}</p>
+      <p><strong>{{ bouquet.price }} ₽</strong></p>
+      <a href="{% url 'create_order' bouquet.id %}">Заказать</a>
+    </div>
+  {% empty %}
+    <p>Нет доступных букетов.</p>
+  {% endfor %}
+</div>
+{% endblock %}

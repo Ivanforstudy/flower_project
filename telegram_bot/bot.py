@@ -1,49 +1,51 @@
 # telegram_bot/bot.py
 
 import logging
-from telegram import Update, InputMediaPhoto
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram import Bot
+from django.conf import settings
 
-from main.models import Order
-import django
-import os
-import sys
+logger = logging.getLogger(__name__)
 
-# Настройка Django окружения
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "flower_project.settings")
-django.setup()
+bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
 
-logging.basicConfig(level=logging.INFO)
-
-BOT_TOKEN = 'YOUR_BOT_TOKEN'  # замени на свой
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🌸 Добро пожаловать в Flower Delivery Bot!\nЯ покажу тебе заказы клиентов.")
-
-async def orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    orders = Order.objects.all().order_by('-created_at')[:5]
-    if not orders:
-        await update.message.reply_text("Пока нет заказов.")
-        return
-
-    for order in orders:
-        flower = order.flower
+def send_order_notification(order):
+    """
+    Отправляет в чат магазина сообщение с данными заказа.
+    order - объект модели Order с полями:
+      bouquet (связанный с объектом Bouquet)
+      price
+      delivery_date
+      delivery_time
+      delivery_address
+      comment
+    """
+    try:
+        bouquet = order.bouquet
         text = (
-            f"🌷 Букет: {flower.name}\n"
-            f"💰 Цена: {flower.price} руб.\n"
-            f"📍 Адрес: {order.address}\n"
-            f"📅 Доставка: {order.delivery_date} в {order.delivery_time}\n"
-            f"💬 Комментарий: {order.comment or '—'}"
+            f"🌸 *Новый заказ*\n"
+            f"Букет: {bouquet.name}\n"
+            f"Цена: {order.price} руб.\n"
+            f"Дата и время доставки: {order.delivery_date} {order.delivery_time}\n"
+            f"Адрес доставки: {order.delivery_address}\n"
         )
-        if flower.image:
-            await update.message.reply_photo(photo=open(flower.image.path, 'rb'), caption=text)
-        else:
-            await update.message.reply_text(text)
+        if order.comment:
+            text += f"Комментарий: {order.comment}\n"
 
-def run_bot():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("orders", orders))
-    print("Bot started...")
-    app.run_polling()
+        # Отправим фото букета, если есть
+        if bouquet.image and bouquet.image.url:
+            bot.send_photo(
+                chat_id=settings.TELEGRAM_CHAT_ID,
+                photo=bouquet.image.url,
+                caption=text,
+                parse_mode="Markdown"
+            )
+        else:
+            # Если фото нет — просто текст
+            bot.send_message(
+                chat_id=settings.TELEGRAM_CHAT_ID,
+                text=text,
+                parse_mode="Markdown"
+            )
+        logger.info(f"Заказ #{order.id} отправлен в Telegram")
+    except Exception as e:
+        logger.error(f"Ошибка при отправке заказа #{order.id} в Telegram: {e}")
