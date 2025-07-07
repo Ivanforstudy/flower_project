@@ -1,23 +1,17 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Flower Delivery</title>
+    <title>{% block title %}Магазин цветов{% endblock %}</title>
+    {% load static %}
     <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body>
-   {% if messages %}
-    <ul style="color: green;">
-        {% for message in messages %}
-            <li>{{ message }}</li>
-        {% endfor %}
-    </ul>
-   {% endif %}
     <header>
         <nav>
             <ul>
                 <li><a href="{% url 'main:home' %}">Главная</a></li>
+                <li><a href="{% url 'main:catalog' %}">Каталог букетов</a></li>
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'accounts:logout' %}">Выход</a></li>
                 {% else %}
@@ -32,5 +26,9 @@
         {% block content %}
         {% endblock %}
     </main>
+
+    <footer>
+        <p>&copy; 2025 Магазин цветов</p>
+    </footer>
 </body>
 </html>

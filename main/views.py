@@ -21,3 +21,7 @@ def create_order(request, bouquet_id):
     else:
         form = OrderForm()
     return render(request, 'main/create_order.html', {'form': form, 'bouquet': bouquet})
+
+def catalog(request):
+    bouquets = Bouquet.objects.all()
+    return render(request, 'main/catalog.html', {'bouquets': bouquets})

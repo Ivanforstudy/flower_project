@@ -1,0 +1,28 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<h1>Каталог букетов</h1>
+
+{% if bouquets %}
+    <div class="bouquet-list">
+        {% for bouquet in bouquets %}
+            <div class="bouquet-item">
+                {% if bouquet.image %}
+                    <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}" width="200">
+                {% endif %}
+                <h3>{{ bouquet.name }}</h3>
+                <p>{{ bouquet.description }}</p>
+                <p><strong>Цена:</strong> {{ bouquet.price }} ₽</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'main:create_order' bouquet.id %}">Заказать</a>
+                {% else %}
+                    <p><a href="{% url 'accounts:login' %}">Войдите</a>, чтобы оформить заказ</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>Нет доступных букетов.</p>
+{% endif %}
+{% endblock %}

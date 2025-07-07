@@ -1,77 +1,101 @@
 import logging
 import os
-from aiogram import Bot, Dispatcher, types
-from aiogram.types import InputFile
-from aiogram.utils import executor
+import sys
+import asyncio
+from aiogram import Bot, Dispatcher, types, Router, F
+from aiogram.types import FSInputFile
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from dotenv import load_dotenv
 import django
 
-# Настройка Django окружения
+# Django setup
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flower_project.settings')
 django.setup()
 
-from main.models import Flower, Order
+from main.models import Bouquet, Order
 from django.contrib.auth import get_user_model
 
+# Загрузка токена
 load_dotenv()
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
+# Логгер
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-bot = Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
-dp = Dispatcher(bot)
+# FSM
+class OrderState(StatesGroup):
+    waiting_for_bouquet_name = State()
+    waiting_for_address = State()
+    waiting_for_comment = State()
 
-user_states = {}
+# Создаём роутер
+router = Router()
 
-@dp.message_handler(commands=['start'])
-async def start_handler(message: types.Message):
-    user_states[message.chat.id] = {'step': 'get_bouquet_name'}
+# Start command
+@router.message(F.text == "/start")
+async def cmd_start(message: types.Message, state: FSMContext):
+    await state.set_state(OrderState.waiting_for_bouquet_name)
     await message.answer("Здравствуйте! Давайте оформим заказ. Как называется букет?")
 
-@dp.message_handler(content_types=types.ContentTypes.TEXT)
-async def text_handler(message: types.Message):
-    chat_id = message.chat.id
-    state = user_states.get(chat_id, {})
+# Обработка имени букета
+@router.message(OrderState.waiting_for_bouquet_name)
+async def bouquet_name_handler(message: types.Message, state: FSMContext):
+    bouquet_name = message.text.strip()
+    try:
+        flower = Bouquet.objects.get(name__iexact=bouquet_name)
+        await state.update_data(flower_id=flower.id)
 
-    if state.get('step') == 'get_bouquet_name':
-        bouquet_name = message.text.strip()
-        try:
-            flower = Flower.objects.get(name__iexact=bouquet_name)
-            state['flower'] = flower
-            state['step'] = 'get_address'
+        if flower.image:
+            image_path = flower.image.path
+            photo = FSInputFile(image_path)
+            await message.answer_photo(photo, caption=f"Вы выбрали букет: {flower.name}\nЦена: {flower.price}₽")
+        else:
+            await message.answer(f"Вы выбрали букет: {flower.name}\nЦена: {flower.price}₽")
 
-            if flower.image:
-                image_path = flower.image.path
-                await bot.send_photo(chat_id, InputFile(image_path), caption=f"Вы выбрали букет: {flower.name}\nЦена: {flower.price}₽")
-            else:
-                await message.answer(f"Вы выбрали букет: {flower.name}\nЦена: {flower.price}₽")
+        await state.set_state(OrderState.waiting_for_address)
+        await message.answer("Укажите адрес доставки:")
 
-            await message.answer("Укажите адрес доставки:")
-        except Flower.DoesNotExist:
-            await message.answer("Букет с таким названием не найден. Попробуйте снова.")
+    except Bouquet.DoesNotExist:
+        await message.answer("Букет с таким названием не найден. Попробуйте снова.")
 
-    elif state.get('step') == 'get_address':
-        state['address'] = message.text.strip()
-        state['step'] = 'get_comment'
-        await message.answer("Добавьте комментарий к заказу или отправьте '-' если без комментариев:")
+# Адрес
+@router.message(OrderState.waiting_for_address)
+async def address_handler(message: types.Message, state: FSMContext):
+    await state.update_data(address=message.text.strip())
+    await state.set_state(OrderState.waiting_for_comment)
+    await message.answer("Добавьте комментарий или отправьте '-' если без комментариев:")
 
-    elif state.get('step') == 'get_comment':
-        comment = message.text.strip()
-        flower = state.get('flower')
-        address = state.get('address')
-        user = get_user_model().objects.first()  # Тестовый пользователь
+# Комментарий и оформление
+@router.message(OrderState.waiting_for_comment)
+async def comment_handler(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    flower_id = data.get("flower_id")
+    address = data.get("address")
+    comment = message.text.strip()
 
-        order = Order.objects.create(
-            user=user,
-            flower=flower,
-            delivery_address=address,
-            comment='' if comment == '-' else comment
-        )
+    flower = Bouquet.objects.get(id=flower_id)
+    user = get_user_model().objects.first()  # Для демонстрации
+    Order.objects.create(
+        user=user,
+        bouquet=flower,
+        delivery_address=address,
+        comment='' if comment == '-' else comment
+    )
 
-        await message.answer("Ваш заказ оформлен! Спасибо!")
-        user_states.pop(chat_id, None)
+    await message.answer("Ваш заказ оформлен! Спасибо!")
+    await state.clear()
 
-if __name__ == '__main__':
-    logger.info("Запуск бота...")
-    executor.start_polling(dp, skip_updates=True)
+# Главная точка входа
+async def main():
+    bot = Bot(token=TELEGRAM_BOT_TOKEN)
+    dp = Dispatcher()
+    dp.include_router(router)
+
+    logger.info("Бот запущен!")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())
