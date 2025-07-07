@@ -9,8 +9,3 @@ class OrderForm(forms.ModelForm):
             'delivery_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'comment': forms.Textarea(attrs={'rows': 3}),
         }
-        labels = {
-            'delivery_address': 'Адрес доставки',
-            'delivery_datetime': 'Дата и время доставки',
-            'comment': 'Комментарий к заказу',
-        }

@@ -1,28 +1,22 @@
 {% extends 'main/base.html' %}
-{% load static %}
 
 {% block content %}
-<h1>Каталог букетов</h1>
-
+<h2>Каталог букетов</h2>
 {% if bouquets %}
-    <div class="bouquet-list">
+    <ul>
         {% for bouquet in bouquets %}
-            <div class="bouquet-item">
-                {% if bouquet.image %}
-                    <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}" width="200">
-                {% endif %}
+            <li>
                 <h3>{{ bouquet.name }}</h3>
                 <p>{{ bouquet.description }}</p>
-                <p><strong>Цена:</strong> {{ bouquet.price }} ₽</p>
-                {% if user.is_authenticated %}
-                    <a href="{% url 'main:create_order' bouquet.id %}">Заказать</a>
-                {% else %}
-                    <p><a href="{% url 'accounts:login' %}">Войдите</a>, чтобы оформить заказ</p>
+                <p>Цена: {{ bouquet.price }} ₽</p>
+                {% if bouquet.image %}
+                    <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}" style="max-height: 200px;">
                 {% endif %}
-            </div>
+                <p><a href="{% url 'main:create_order' bouquet.id %}">Заказать</a></p>
+            </li>
         {% endfor %}
-    </div>
+    </ul>
 {% else %}
-    <p>Нет доступных букетов.</p>
+    <p>Букеты временно недоступны.</p>
 {% endif %}
 {% endblock %}

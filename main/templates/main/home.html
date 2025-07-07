@@ -2,6 +2,30 @@
 {% load static %}
 
 {% block content %}
-<h1>Добро пожаловать!</h1>
-<p>Это сайт по доставке цветов. Вы можете <a href="{% url 'main:catalog' %}">перейти в каталог букетов</a>, чтобы выбрать и заказать букет.</p>
+<div class="container mt-4">
+    <h2>Каталог букетов</h2>
+    {% if user.is_authenticated %}
+        {% if bouquets %}
+            <div class="row">
+                {% for bouquet in bouquets %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <img src="{{ bouquet.image.url }}" class="card-img-top" alt="{{ bouquet.name }}">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ bouquet.name }}</h5>
+                                <p class="card-text">{{ bouquet.description }}</p>
+                                <p><strong>{{ bouquet.price }} ₽</strong></p>
+                                <a href="{% url 'cart:add_to_cart' bouquet.id %}" class="btn btn-primary mt-auto">Добавить в корзину</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Нет доступных букетов.</p>
+        {% endif %}
+    {% else %}
+        <p>Пожалуйста, войдите или зарегистрируйтесь, чтобы просмотреть каталог букетов и оформить заказ.</p>
+    {% endif %}
+</div>
 {% endblock %}
