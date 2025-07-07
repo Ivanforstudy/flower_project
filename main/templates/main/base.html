@@ -11,7 +11,7 @@
         <ul>
             <li><a href="{% url 'main:home' %}">Главная</a></li>
             {% if user.is_authenticated %}
-                <li><a href="{% url 'cart:view_cart' %}">Корзина</a></li>
+                <li><a href="{% url 'cart:cart_view' %}">Корзина</a></li>
                 <li><a href="{% url 'logout' %}">Выход</a></li>
             {% else %}
                 <li><a href="{% url 'login' %}">Вход</a></li>

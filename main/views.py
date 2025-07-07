@@ -32,6 +32,20 @@ def view_cart(request):
     total = sum(item.bouquet.price * item.quantity for item in cart_items)
     return render(request, 'main/cart.html', {'cart_items': cart_items, 'total': total})
 
+@login_required
+def remove_from_cart(request, item_id):
+    item = get_object_or_404(CartItem, id=item_id, user=request.user)
+    item.delete()
+    messages.success(request, 'Товар удалён из корзины.')
+    return redirect('main:cart')
+
+
+
+# 🔧 ДОБАВЛЕНО ДЛЯ УСТРАНЕНИЯ ОШИБКИ
+@login_required
+def cart_view(request):
+    return view_cart(request)
+
 
 @login_required
 def checkout(request):
@@ -57,3 +71,4 @@ def checkout(request):
     else:
         form = OrderForm()
     return render(request, 'main/checkout.html', {'form': form})
+
