@@ -1,6 +1,21 @@
-{% extends "main/base.html" %}
+{% extends 'main/base.html' %}
 
 {% block content %}
-<h1>Корзина</h1>
-<p>Здесь будет отображаться содержимое корзины.</p>
+<h2>Ваша корзина</h2>
+
+{% if cart_items %}
+    <ul>
+        {% for item in cart_items %}
+            <li>
+                <strong>{{ item.bouquet.name }}</strong> — {{ item.quantity }} шт. × {{ item.bouquet.price }} ₽ =
+                {{ item.quantity|floatformat:2|add:"0"|floatformat:2|floatformat }} ₽
+                <a href="{% url 'main:remove_from_cart' item.bouquet.id %}">Удалить</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <p><strong>Итого:</strong> {{ total }} ₽</p>
+    <a href="{% url 'main:checkout' %}" class="btn btn-primary">Оформить заказ</a>
+{% else %}
+    <p>Ваша корзина пуста.</p>
+{% endif %}
 {% endblock %}

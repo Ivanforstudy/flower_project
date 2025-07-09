@@ -14,7 +14,7 @@ def register(request):
             return redirect('main:home')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'main/register.html', {'form': form})
+    return render(request, 'accounts/register.html', {'form': form})
 
 def login_view(request):
     if request.method == 'POST':
@@ -28,7 +28,7 @@ def login_view(request):
             messages.error(request, 'Неверные имя пользователя или пароль.')
     else:
         form = AuthenticationForm()
-    return render(request, 'main/login.html', {'form': form})
+    return render(request, 'accounts/login.html', {'form': form})
 
 def logout_view(request):
     logout(request)

@@ -6,13 +6,22 @@ class Bouquet(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название")
     description = models.TextField(verbose_name="Описание")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
-    image = models.ImageField(upload_to='bouquets/', verbose_name="Изображение")
+    image = models.ImageField(
+        upload_to='bouquets/',
+        verbose_name="Изображение",
+        default='bouquets/default.jpg'  # <-- добавлен дефолт
+    )
 
     def __str__(self):
         return self.name
 
 class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь",
+        default=1
+    )
     bouquet = models.ForeignKey(Bouquet, on_delete=models.CASCADE, verbose_name="Букет")
     delivery_address = models.CharField(max_length=255, verbose_name="Адрес доставки")
     delivery_datetime = models.DateTimeField(verbose_name="Дата и время доставки")
@@ -23,7 +32,11 @@ class Order(models.Model):
         return f"Заказ #{self.pk} от {self.user.username}"
 
 class CartItem(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        default=1
+    )
     bouquet = models.ForeignKey(Bouquet, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
 

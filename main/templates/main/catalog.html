@@ -12,7 +12,12 @@
                 {% if bouquet.image %}
                     <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}" style="max-height: 200px;">
                 {% endif %}
-                <p><a href="{% url 'main:create_order' bouquet.id %}">Заказать</a></p>
+                <p>
+                    <form action="{% url 'main:add_to_cart' bouquet.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Добавить в корзину</button>
+                    </form>
+                </p>
             </li>
         {% endfor %}
     </ul>

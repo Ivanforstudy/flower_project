@@ -17,7 +17,6 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields['password2'].label = 'Подтверждение пароля'
         self.fields['password2'].help_text = 'Введите пароль ещё раз для подтверждения'
 
-        # Перевод сообщений об ошибках
         self.error_messages = {
             'password_mismatch': 'Введённые пароли не совпадают.',
         }
