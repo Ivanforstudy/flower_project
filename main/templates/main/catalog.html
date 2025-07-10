@@ -1,27 +1,42 @@
 {% extends 'main/base.html' %}
 
+{% block title %}Каталог{% endblock %}
+
 {% block content %}
-<h2>Каталог букетов</h2>
-{% if bouquets %}
-    <ul>
-        {% for bouquet in bouquets %}
-            <li>
-                <h3>{{ bouquet.name }}</h3>
-                <p>{{ bouquet.description }}</p>
-                <p>Цена: {{ bouquet.price }} ₽</p>
-                {% if bouquet.image %}
-                    <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}" style="max-height: 200px;">
-                {% endif %}
-                <p>
-                    <form action="{% url 'main:add_to_cart' bouquet.id %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit">Добавить в корзину</button>
-                    </form>
-                </p>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Букеты временно недоступны.</p>
+<h1>Каталог букетов</h1>
+
+<!-- Блок сообщений -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
 {% endif %}
+
+<div class="catalog">
+    {% for bouquet in bouquets %}
+        <div class="bouquet-card">
+            <h2>{{ bouquet.name }}</h2>
+            <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}" width="200">
+            <p>{{ bouquet.description }}</p>
+            <p>Цена: {{ bouquet.price }} ₽</p>
+
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'main:add_to_cart' bouquet.id %}">
+                    {% csrf_token %}
+                    <button type="submit">Добавить в корзину</button>
+                </form>
+
+                <form method="get" action="{% url 'main:buy_now' bouquet.id %}">
+                    <button type="submit">Купить сейчас</button>
+                </form>
+            {% else %}
+                <p><a href="{% url 'accounts:login' %}">Войдите</a>, чтобы купить или добавить в корзину.</p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>Букеты не найдены.</p>
+    {% endfor %}
+</div>
 {% endblock %}

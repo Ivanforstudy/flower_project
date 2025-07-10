@@ -2,12 +2,34 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Оформление заказа</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Подтвердить заказ</button>
-    </form>
-</div>
+<h2>Оформление заказа</h2>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <p>
+        {{ form.delivery_address.label_tag }}<br>
+        {{ form.delivery_address }}<br>
+        {{ form.delivery_address.errors }}
+    </p>
+    <p>
+        {{ form.delivery_datetime.label_tag }}<br>
+        {{ form.delivery_datetime }}<br>
+        {{ form.delivery_datetime.errors }}
+    </p>
+    <p>
+        {{ form.comment.label_tag }}<br>
+        {{ form.comment }}<br>
+        {{ form.comment.errors }}
+    </p>
+
+    <button type="submit" class="btn btn-primary">Подтвердить заказ</button>
+</form>
 {% endblock %}

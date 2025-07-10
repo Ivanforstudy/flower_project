@@ -3,13 +3,15 @@ from .models import Bouquet, Order
 
 @admin.register(Bouquet)
 class BouquetAdmin(admin.ModelAdmin):
-    list_display = ('name', 'price', 'image')
+    list_display = ('name', 'price')
+    search_fields = ('name',)
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('user', 'bouquet', 'delivery_address', 'delivery_datetime', 'created_at')
+    list_display = ('id', 'user', 'delivery_address', 'delivery_datetime', 'total_price', 'get_bouquets')
+    list_filter = ('delivery_datetime',)
+    search_fields = ('user__username', 'delivery_address')
 
-# Настройки панели администратора
-admin.site.site_header = "Магазин букетов"
-admin.site.index_title = "Администрирование"
-admin.site.site_title = "Панель администратора"
+    def get_bouquets(self, obj):
+        return ", ".join([b.name for b in obj.bouquets.all()])
+    get_bouquets.short_description = "Букеты"

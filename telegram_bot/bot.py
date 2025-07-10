@@ -88,6 +88,38 @@ async def comment_handler(message: types.Message, state: FSMContext):
     await message.answer("Ваш заказ оформлен! Спасибо!")
     await state.clear()
 
+def send_order_notification(bouquet, order):
+    import requests
+    from .credentials import BOT_TOKEN, CHAT_ID
+
+    text = (
+        f"📦 Новый заказ!\n\n"
+        f"💐 Букет: {bouquet.name}\n"
+        f"💰 Цена: {order.total_price} ₽\n"
+        f"📅 Доставка: {order.delivery_datetime.strftime('%d.%m.%Y %H:%M')}\n"
+        f"📍 Адрес: {order.delivery_address}\n"
+        f"📝 Комментарий: {order.comment or 'нет'}"
+    )
+
+    image_path = bouquet.image.path if bouquet.image else None
+    telegram_api_url = f'https://api.telegram.org/bot{BOT_TOKEN}'
+
+    if image_path:
+        with open(image_path, 'rb') as photo_file:
+            requests.post(
+                f'{telegram_api_url}/sendPhoto',
+                data={
+                    'chat_id': CHAT_ID,
+                    'caption': text
+                },
+                files={'photo': photo_file}
+            )
+    else:
+        requests.post(
+            f'{telegram_api_url}/sendMessage',
+            data={'chat_id': CHAT_ID, 'text': text}
+        )
+
 # Главная точка входа
 async def main():
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
