@@ -83,3 +83,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TELEGRAM_BOT_TOKEN = "7763598812:AAHa-yOc3rZ0wINeAptiE6ktRflzADi_OqU"
 TELEGRAM_CHAT_ID = 2111297101
 LOGIN_REDIRECT_URL = '/catalog/'
+AUTH_USER_MODEL = 'accounts.CustomUser'
