@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Bouquet, CartItem, Order
 from .forms import OrderForm
-from telegram_bot.bot import send_order_notification
+
 
 
 def home(request):
