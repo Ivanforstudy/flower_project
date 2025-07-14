@@ -9,6 +9,7 @@ from aiogram.fsm.state import State, StatesGroup
 from dotenv import load_dotenv
 from asgiref.sync import sync_to_async
 import django
+from datetime import datetime, timedelta
 
 # Django setup
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -32,6 +33,7 @@ router = Router()
 
 @router.message(F.text == "/start")
 async def cmd_start(message: types.Message, state: FSMContext):
+    await state.clear()
     await state.set_state(OrderState.waiting_for_bouquet_name)
     await message.answer("Здравствуйте! Как называется букет, который вы хотите заказать?")
 
@@ -67,9 +69,12 @@ async def address_handler(message: types.Message, state: FSMContext):
 
 @router.message(OrderState.waiting_for_datetime)
 async def datetime_handler(message: types.Message, state: FSMContext):
-    from datetime import datetime
     try:
         dt = datetime.strptime(message.text.strip(), "%Y-%m-%d %H:%M")
+        if dt < datetime.now() + timedelta(hours=1):
+            await message.answer("❗ Доставку можно оформить минимум за 1 час вперёд.")
+            return
+
         await state.update_data(delivery_datetime=dt)
         await state.set_state(OrderState.waiting_for_comment)
         await message.answer("Добавьте комментарий или отправьте '-' если без комментариев:")
@@ -81,7 +86,13 @@ async def comment_handler(message: types.Message, state: FSMContext):
     try:
         data = await state.get_data()
         flower = await sync_to_async(Bouquet.objects.get)(id=data["flower_id"])
-        user = await sync_to_async(get_user_model().objects.first)()
+
+        User = get_user_model()
+        user, _ = await sync_to_async(User.objects.get_or_create)(
+            email=f"tg_{message.from_user.id}@example.com",
+            defaults={"name": message.from_user.full_name or "Telegram User"}
+        )
+
         comment = message.text.strip()
 
         order = await sync_to_async(Order.objects.create)(
@@ -94,12 +105,12 @@ async def comment_handler(message: types.Message, state: FSMContext):
         await sync_to_async(order.bouquets.add)(flower)
 
         caption = (
-            f"🌸 Новый заказ!\n"
+            f"\U0001F490 Новый заказ!\n"
             f"Букет: {flower.name}\n"
-            f"💰 Цена: {flower.price} ₽\n"
-            f"📍 Адрес: {data['address']}\n"
-            f"📅 Доставка: {data['delivery_datetime']:%d.%m.%Y %H:%M}\n"
-            f"📝 Комментарий: {comment if comment != '-' else 'Нет'}"
+            f"\U0001F4B0 Цена: {flower.price} ₽\n"
+            f"\U0001F4CD Адрес: {data['address']}\n"
+            f"\U0001F4C5 Доставка: {data['delivery_datetime']:%d.%m.%Y %H:%M}\n"
+            f"\U0001F4DD Комментарий: {comment if comment != '-' else 'Нет'}"
         )
 
         if flower.image and os.path.exists(flower.image.path):
@@ -124,4 +135,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

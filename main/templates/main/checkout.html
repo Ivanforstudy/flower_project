@@ -1,0 +1,28 @@
+<!-- файл: main/templates/main/checkout.html -->
+
+{% extends "main/base.html" %}
+
+{% block title %}Оформление заказа{% endblock %}
+
+{% block content %}
+<h1>Оформление заказа</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <div>
+        <label for="{{ form.delivery_address.id_for_label }}">Адрес доставки:</label><br>
+        {{ form.delivery_address }}
+    </div>
+    <div>
+        <label for="{{ form.delivery_datetime.id_for_label }}">Дата и время доставки:</label><br>
+        {{ form.delivery_datetime }}
+    </div>
+    <div>
+        <label for="{{ form.comment.id_for_label }}">Комментарий:</label><br>
+        {{ form.comment }}
+    </div>
+    <div style="margin-top: 20px;">
+        <button type="submit">Подтвердить заказ</button>
+    </div>
+</form>
+{% endblock %}

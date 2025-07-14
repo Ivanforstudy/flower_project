@@ -1,42 +1,33 @@
-{% extends 'main/base.html' %}
+<!-- файл: main/templates/main/catalog.html -->
+
+{% extends "main/base.html" %}
 
 {% block title %}Каталог{% endblock %}
 
 {% block content %}
 <h1>Каталог букетов</h1>
 
-<!-- Блок сообщений -->
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-    {% endfor %}
-{% endif %}
+{% if bouquets %}
+    <div style="display: flex; flex-wrap: wrap; gap: 30px;">
+        {% for bouquet in bouquets %}
+            <div style="border: 1px solid #ccc; padding: 15px; width: 250px;">
+                <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}" style="max-width: 100%;">
+                <h3>{{ bouquet.name }}</h3>
+                <p>{{ bouquet.description }}</p>
+                <p><strong>{{ bouquet.price }} ₽</strong></p>
 
-<div class="catalog">
-    {% for bouquet in bouquets %}
-        <div class="bouquet-card">
-            <h2>{{ bouquet.name }}</h2>
-            <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}" width="200">
-            <p>{{ bouquet.description }}</p>
-            <p>Цена: {{ bouquet.price }} ₽</p>
-
-            {% if user.is_authenticated %}
-                <form method="post" action="{% url 'main:add_to_cart' bouquet.id %}">
+                <form action="{% url 'main:add_to_cart' bouquet.id %}" method="post" style="margin-bottom: 10px;">
                     {% csrf_token %}
-                    <button type="submit">Добавить в корзину</button>
+                    <button type="submit">В корзину</button>
                 </form>
 
-                <form method="get" action="{% url 'main:buy_now' bouquet.id %}">
+                <form action="{% url 'main:buy_now' bouquet.id %}" method="get">
                     <button type="submit">Купить сейчас</button>
                 </form>
-            {% else %}
-                <p><a href="{% url 'accounts:login' %}">Войдите</a>, чтобы купить или добавить в корзину.</p>
-            {% endif %}
-        </div>
-    {% empty %}
-        <p>Букеты не найдены.</p>
-    {% endfor %}
-</div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>Нет доступных букетов.</p>
+{% endif %}
 {% endblock %}

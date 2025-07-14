@@ -4,12 +4,12 @@ from . import views
 app_name = 'main'
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.index, name='home'),
     path('catalog/', views.catalog, name='catalog'),
-    path('add_to_cart/<int:bouquet_id>/', views.add_to_cart, name='add_to_cart'),
-    path('cart/', views.view_cart, name='cart_view'),  # <-- исправлено
-    path('remove_from_cart/<int:bouquet_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('cart/', views.cart_view, name='cart_view'),
+    path('cart/add/<int:bouquet_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
     path('checkout/', views.checkout, name='checkout'),
-    path('buy_now/<int:bouquet_id>/', views.buy_now, name='buy_now'),
-    path('спасибо/', views.thank_you, name='спасибо'),
+    path('buy/<int:bouquet_id>/', views.buy_now, name='buy_now'),
+    path('success/', views.order_success, name='order_success'),
 ]

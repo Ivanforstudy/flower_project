@@ -1,0 +1,12 @@
+<!-- файл: main/templates/main/order_success.html -->
+
+{% extends 'main/base.html' %}
+
+{% block title %}Заказ оформлен{% endblock %}
+
+{% block content %}
+    <h2>Спасибо за заказ!</h2>
+    <p>Ваш заказ был успешно оформлен и передан на обработку.</p>
+    <p>Вы получите подтверждение доставки через Telegram.</p>
+    <a href="{% url 'main:catalog' %}">Вернуться в каталог</a>
+{% endblock %}

@@ -1,20 +1,46 @@
-{% extends 'main/base.html' %}
+<!-- файл: main/templates/main/cart.html -->
+
+{% extends "main/base.html" %}
+
+{% block title %}Корзина{% endblock %}
 
 {% block content %}
-<h2>Ваша корзина</h2>
+<h1>Ваша корзина</h1>
 
 {% if cart_items %}
-    <ul>
-        {% for item in cart_items %}
-            <li>
-                <strong>{{ item.bouquet.name }}</strong> — {{ item.quantity }} шт. × {{ item.bouquet.price }} ₽ =
-                {{ item.quantity|floatformat:2|add:"0"|floatformat:2|floatformat }} ₽
-                <a href="{% url 'main:remove_from_cart' item.bouquet.id %}">Удалить</a>
-            </li>
-        {% endfor %}
-    </ul>
-    <p><strong>Итого:</strong> {{ total }} ₽</p>
-    <a href="{% url 'main:checkout' %}" class="btn btn-primary">Оформить заказ</a>
+    <table border="1" cellpadding="10" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Букет</th>
+                <th>Количество</th>
+                <th>Цена за штуку</th>
+                <th>Сумма</th>
+                <th>Удалить</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+                <tr>
+                    <td>{{ item.bouquet.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.bouquet.price }} ₽</td>
+                    <td>{{ item.quantity|floatformat:0|add:""|add:item.bouquet.price|floatformat:0 }} ₽</td>
+                    <td>
+                        <form method="post" action="{% url 'main:remove_from_cart' item.id %}">
+                            {% csrf_token %}
+                            <button type="submit">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 20px;">
+        <a href="{% url 'main:checkout' %}">
+            <button>Оформить заказ</button>
+        </a>
+    </div>
 {% else %}
     <p>Ваша корзина пуста.</p>
 {% endif %}
